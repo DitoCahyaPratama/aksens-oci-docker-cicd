@@ -107,22 +107,27 @@ jobs:
           target: "./"
 
       - name: 'install LAMP'
-        run: |
-          yum install epel-release
-          yum install dnf
-          dnf install nginx php php-fpm php-common php-xml php-mbstring php-json php-zip mariadb-server php-mysqlnd
-          systemctl start php-fpm nginx mariadb
-          systemctl enable php-fpm nginx mariadb
-          systemctl status php-fpm nginx mariadb
-          mysql_secure_installation
-          y
-          root
-          y
-          y
-          y
-          firewall-cmd --zone=public --permanent --add-service=http
-          firewall-cmd --zone=public --permanent --add-service=https
-          firewall-cmd --reload
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{env.INSTANCE_IP}}
+          username: opc
+          key: ${{secrets.OCI_KEY_FILE}}
+          script: |
+            sudo yum install epel-release
+            sudo yum install dnf
+            sudo dnf install nginx php php-fpm php-common php-xml php-mbstring php-json php-zip mariadb-server php-mysqlnd
+            sudo systemctl start php-fpm nginx mariadb
+            sudo systemctl enable php-fpm nginx mariadb
+            sudo systemctl status php-fpm nginx mariadb
+            sudo mysql_secure_installation
+            y
+            root
+            y
+            y
+            y
+            sudo firewall-cmd --zone=public --permanent --add-service=http
+            sudo firewall-cmd --zone=public --permanent --add-service=https
+            sudo firewall-cmd --reload
 
       - name: 'install PHP'
         run: |
