@@ -128,17 +128,11 @@ jobs:
             sudo firewall-cmd --zone=public --permanent --add-service=http
             sudo firewall-cmd --zone=public --permanent --add-service=https
             sudo firewall-cmd --reload
-
-      - name: 'install PHP'
-        run: |
-          yum --enablerepo=remi,epel install php php-zip php-mysql php-mcrypt php-xml php-mbstring
-          service httpd restart
-
-      - name: 'install composer'
-        run: |
-          curl -sS https://getcomposer.org/installer | php
-          mv composer.phar /usr/bin/composer
-          chmod +x /usr/bin/composer
+            yum --enablerepo=remi,epel install php php-zip php-mysql php-mcrypt php-xml php-mbstring
+            service httpd restart
+            curl -sS https://getcomposer.org/installer | php
+            mv composer.phar /usr/bin/composer
+            chmod +x /usr/bin/composer
 
       - name: 'Running Docker Compose'
         uses: appleboy/ssh-action@master
