@@ -16,10 +16,6 @@ jobs:
       - name: 'Checkout'
         uses: actions/checkout@v2
 
-      - name: 'Run Component Test'
-        run: |
-          npm run test
-
       - name: 'Login to Dockerhub'
         uses: docker/login-action@v1
         with:
