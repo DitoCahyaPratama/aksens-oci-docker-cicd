@@ -1,7 +1,7 @@
 version: "3"
 services:
     web:
-        image: doyatama/aksens:latest
+        image: doyatama/aksens-webserver:latest
         container_name: web
         restart: unless-stopped
         ports:
