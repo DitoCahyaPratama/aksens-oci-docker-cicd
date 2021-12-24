@@ -37,11 +37,7 @@ fi
 chown www-data:www-data bootstrap/cache
 chown -R www-data:www-data storage/
 
-if [[ "$DB_CONNECTION" = "mysql" ]]; then
-#    touch database/database.sqlite
-#    chown -R www-data:www-data database/
-fi
-php artisan migrate:fresh --seed
+php artisan migrate:fresh --seed --force
 
 if [[ "$role" = "app" ]]; then
 
