@@ -1,0 +1,42 @@
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+
+class BannerSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     *
+     * @return void
+     */
+    public function run()
+    {
+        DB::table('banners')->insert([
+            'foto' => 'img1.jpg',
+        ]);
+        DB::table('banners')->insert([
+            'foto' => 'img2.jpg',
+        ]);
+        DB::table('banners')->insert([
+            'foto' => 'img1.jpg',
+        ]);
+        DB::table('banners')->insert([
+            'foto' => 'img2.jpg',
+        ]);
+        DB::table('banners')->insert([
+            'foto' => 'img1.jpg',
+        ]);
+        DB::table('banners')->insert([
+            'foto' => 'img2.jpg',
+        ]);
+        DB::table('banners')->insert([
+            'foto' => 'img1.jpg',
+        ]);
+        DB::table('banners')->insert([
+            'foto' => 'img2.jpg',
+        ]);
+    }
+}
