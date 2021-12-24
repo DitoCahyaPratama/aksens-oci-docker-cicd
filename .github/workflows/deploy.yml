@@ -1,4 +1,4 @@
-name: cicd-demo
+name: aksens-platform
 
 on:
   push:
@@ -58,7 +58,7 @@ jobs:
             oci compute instance list \
             --lifecycle-state RUNNING \
             --compartment-id ${{secrets.VM_COMPARTMENT_OCID}} \
-            --display-name cicd-demo \
+            --display-name aksens-platform \
             --query "data [0].id" \
             --raw-output \
             )" >> $GITHUB_ENV
@@ -73,7 +73,7 @@ jobs:
             --shape ${{secrets.VM_SHAPE}} \
             --shape-config '{"memoryInGBs": 1, "ocpus": 1}' \
             --assign-public-ip true \
-            --display-name cicd-demo \
+            --display-name aksens-platform \
             --image-id ${{secrets.VM_CUSTOM_IMAGE_OCID}} \
             --ssh-authorized-keys-file /home/runner/.oci/oci_api_key_public.pem \
             --subnet-id ${{secrets.VM_SUBNET_OCID}} \
@@ -105,6 +105,33 @@ jobs:
           key: ${{ secrets.OCI_KEY_FILE }}
           source: "docker-compose.yml"
           target: "./"
+
+      - name: 'install LAMP'
+        run: |
+          dnf install nginx php php-fpm php-common php-xml php-mbstring php-json php-zip mariadb-server php-mysqlnd
+          systemctl start php-fpm nginx mariadb
+          systemctl enable php-fpm nginx mariadb
+          systemctl status php-fpm nginx mariadb
+          mysql_secure_installation
+          y
+          root
+          y
+          y
+          y
+          firewall-cmd --zone=public --permanent --add-service=http
+          firewall-cmd --zone=public --permanent --add-service=https
+          firewall-cmd --reload
+
+      - name: 'install PHP'
+        run: |
+          yum --enablerepo=remi,epel install php php-zip php-mysql php-mcrypt php-xml php-mbstring
+          service httpd restart
+
+      - name: 'install composer'
+        run: |
+          curl -sS https://getcomposer.org/installer | php
+          mv composer.phar /usr/bin/composer
+          chmod +x /usr/bin/composer
 
       - name: 'Running Docker Compose'
         uses: appleboy/ssh-action@master
