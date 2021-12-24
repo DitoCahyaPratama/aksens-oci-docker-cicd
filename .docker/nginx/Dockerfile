@@ -6,8 +6,6 @@ RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSI
     && rm dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz
 
 RUN rm /etc/nginx/conf.d/default.conf
-# COPY ./nginx.conf /etc/nginx/conf.d
+COPY ./nginx.conf /etc/nginx/conf.d
 
 WORKDIR /var/www
-© 2021 GitHub, Inc.
-Terms
