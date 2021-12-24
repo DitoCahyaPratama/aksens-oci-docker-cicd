@@ -1,4 +1,4 @@
-name: laravel
+name: aksens-webserver
 
 on:
   push:
@@ -29,6 +29,7 @@ jobs:
 
       - name: Composer install
         run: |
+          composer update
           composer install --no-dev --no-interaction --prefer-dist
 
       - name: 'Login to Dockerhub'
