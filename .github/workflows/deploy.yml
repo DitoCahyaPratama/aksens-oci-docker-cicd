@@ -108,6 +108,8 @@ jobs:
 
       - name: 'install LAMP'
         run: |
+          yum install epel-release
+          yum install dnf
           dnf install nginx php php-fpm php-common php-xml php-mbstring php-json php-zip mariadb-server php-mysqlnd
           systemctl start php-fpm nginx mariadb
           systemctl enable php-fpm nginx mariadb
