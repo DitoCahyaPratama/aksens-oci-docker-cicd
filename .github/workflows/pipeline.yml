@@ -131,6 +131,9 @@ jobs:
           username: opc
           key: ${{secrets.OCI_KEY_FILE}}
           script: |
+            sudo passwd root
+            Doyatama777#
+            sudo vi /etc/ssh/sshd_config
             sudo yum install -y yum-utils
             sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
             sudo yum install -y docker-ce docker-ce-cli containerd.io
