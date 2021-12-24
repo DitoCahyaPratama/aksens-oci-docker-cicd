@@ -1,19 +1,38 @@
-FROM php:7.3.6-fpm-alpine3.9
+FROM php:7.4-apache
 
-RUN apk add --no-cache shadow openssl bash mysql-client nodejs npm
-RUN docker-php-ext-install pdo pdo_mysql
+WORKDIR /var/www/laravel
 
-ENV DOCKERIZE_VERSION v0.6.1
-RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
-    && tar -C /usr/local/bin -xzvf dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
-    && rm dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-
-WORKDIR /var/www
-RUN rm -rf /var/www/html
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-RUN ln -s public html
-# RUN usermod -u 1000 www-data
-# USER www-data
 
-EXPOSE 9000
-ENTRYPOINT ["php-fpm"]
+RUN apt-get update \
+    && apt-get install -y \
+    cron \
+    icu-devtools \
+    jq \
+    libfreetype6-dev libicu-dev libjpeg62-turbo-dev libpng-dev libpq-dev \
+    libsasl2-dev libssl-dev libwebp-dev libxpm-dev libzip-dev \
+    unzip \
+    zlib1g-dev \
+    && apt-get clean \
+    && apt-get autoclean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+RUN cp /usr/local/etc/php/php.ini-production /usr/local/etc/php/php.ini \
+    && yes '' | pecl install redis \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp --with-xpm \
+    && docker-php-ext-install gd intl pdo_mysql pdo_pgsql zip \
+    && docker-php-ext-enable opcache redis
+
+COPY composer.json composer.lock ./
+RUN composer install --no-autoloader --no-scripts --no-dev
+
+COPY docker/ /
+RUN a2enmod rewrite headers \
+    && a2ensite laravel \
+    && a2dissite 000-default \
+    && chmod +x /usr/local/bin/docker-laravel-entrypoint
+
+COPY . /var/www/laravel
+RUN composer install --optimize-autoloader --no-dev
+
+CMD ["docker-laravel-entrypoint"]

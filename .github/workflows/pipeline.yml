@@ -1,4 +1,4 @@
-name: aksens-platform
+name: laravel
 
 on:
   push:
@@ -15,6 +15,21 @@ jobs:
 
       - name: 'Checkout'
         uses: actions/checkout@v2
+
+      - name: Compile CSS and Javascript
+        run: |
+          npm install
+          npm run prod
+
+      - name: Configure PHP 8.0
+        uses: shivammathur/setup-php@master
+        with:
+          php-version: 8.0
+          extensions: mbstring, ctype, fileinfo, openssl, PDO, bcmath, json, tokenizer, xml
+
+      - name: Composer install
+        run: |
+          composer install --no-dev --no-interaction --prefer-dist
 
       - name: 'Login to Dockerhub'
         uses: docker/login-action@v1
@@ -58,7 +73,7 @@ jobs:
             oci compute instance list \
             --lifecycle-state RUNNING \
             --compartment-id ${{secrets.VM_COMPARTMENT_OCID}} \
-            --display-name aksens-platform \
+            --display-name cicd-demo \
             --query "data [0].id" \
             --raw-output \
             )" >> $GITHUB_ENV
@@ -73,7 +88,7 @@ jobs:
             --shape ${{secrets.VM_SHAPE}} \
             --shape-config '{"memoryInGBs": 1, "ocpus": 1}' \
             --assign-public-ip true \
-            --display-name aksens-platform \
+            --display-name cicd-demo \
             --image-id ${{secrets.VM_CUSTOM_IMAGE_OCID}} \
             --ssh-authorized-keys-file /home/runner/.oci/oci_api_key_public.pem \
             --subnet-id ${{secrets.VM_SUBNET_OCID}} \
@@ -81,6 +96,7 @@ jobs:
             --query "data.id" \
             --raw-output \
             )" >> $GITHUB_ENV
+
       - name: 'Get Instance IP'
         run: |
           echo "INSTANCE_IP=$( \
@@ -90,6 +106,7 @@ jobs:
             --raw-output \
             )" >> $GITHUB_ENV
           echo Instance IP: ${{ env.INSTANCE_IP }}
+
       - name: 'Wait for SSH'
         run: |
           while ! nc -w5 -z ${{ env.INSTANCE_IP }} 22; do
@@ -105,52 +122,6 @@ jobs:
           key: ${{ secrets.OCI_KEY_FILE }}
           source: "docker-compose.yml"
           target: "./"
-
-      - name: 'install LAMP'
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{env.INSTANCE_IP}}
-          username: opc
-          key: ${{secrets.OCI_KEY_FILE}}
-          script: |
-            sudo yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-            sudo yum -y install https://rpms.remirepo.net/enterprise/remi-release-7.rpm
-            sudo yum -y install yum-utils
-            sudo yum-config-manager --enable remi-php74
-            sudo yum update -y
-            sudo yum install -y php php-cli
-            sudo yum install -y php-cli php-fpm php-mysqlnd php-zip php-devel php-gd php-mcrypt php-mbstring php-curl php-xml php-pear php-bcmath php-json php-fpm
-            sudo php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-            sudo php -r "if (hash_file('sha384', 'composer-setup.php') === '756890a4488ce9024fc62c56153228907f1545c228516cbf63f885e036d37e9a59d27d63f46af1d4d07ee0f76181c7d3') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
-            sudo php composer-setup.php
-            sudo php -r "unlink('composer-setup.php');"
-            sudo mv composer.phar /usr/local/bin/composer
-            sudo php -v
-            sudo composer -V
-            sudo curl -sL https://rpm.nodesource.com/setup_10.x | sudo bash -
-            sudo sudo yum install -y nodejs
-            sudo yum remove -y git*
-            sudo yum install -y https://packages.endpoint.com/rhel/7/os/x86_64/endpoint-repo-1.7-1.x86_64.rpm
-            sudo yum install -y git
-            sudo rpm -Uvh https://repo.mysql.com/mysql80-community-release-el7-3.noarch.rpm
-            sudo sed -i 's/enabled=1/enabled=0/' /etc/yum.repos.d/mysql-community.repo
-            sudo yum --enablerepo=mysql80-community install -y mysql-community-server
-            sudo systemctl start mysqld
-            sudo grep "A temporary password" /var/log/mysqld.log
-            sudo mysql_secure_installation
-            sudo mysql -u root -p
-            CREATE DATABASE aksens;
-            create user 'root'@'%' identified by 'root';
-            GRANT ALL PRIVILEGES ON *.* TO 'root'@'%';
-            SET GLOBAL validate_password.policy=LOW;
-            exit;
-            sudo systemctl restart mysqld
-            sudo yum install -y install python3-devel gcc augeas-libs openssl-devel libffi-devel \ redhat-rpm-config ca-certificates openssl
-            sudo cd /home/$USER
-            sudo git clone https://github.com/certbot/certbot
-            sudo cd certbot
-            sudo python tools/venv3.py
-            sudo source venv3/bin/activate
 
       - name: 'Running Docker Compose'
         uses: appleboy/ssh-action@master
