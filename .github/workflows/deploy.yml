@@ -124,7 +124,7 @@ jobs:
             sudo php -r "if (hash_file('sha384', 'composer-setup.php') === '756890a4488ce9024fc62c56153228907f1545c228516cbf63f885e036d37e9a59d27d63f46af1d4d07ee0f76181c7d3') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
             sudo php composer-setup.php
             sudo php -r "unlink('composer-setup.php');"
-            sudo sudo mv composer.phar /usr/local/bin/composer
+            sudo mv composer.phar /usr/local/bin/composer
             sudo php -v
             sudo composer -V
             sudo curl -sL https://rpm.nodesource.com/setup_10.x | sudo bash -
@@ -139,11 +139,11 @@ jobs:
             sudo grep "A temporary password" /var/log/mysqld.log
             sudo mysql_secure_installation
             sudo mysql -u root -p
-            sudo CREATE DATABASE aksens;
-            sudo create user 'root'@'%' identified by 'root';
-            sudo GRANT ALL PRIVILEGES ON *.* TO 'root'@'%';
-            sudo SET GLOBAL validate_password.policy=LOW;
-            sudo exit;
+            CREATE DATABASE aksens;
+            create user 'root'@'%' identified by 'root';
+            GRANT ALL PRIVILEGES ON *.* TO 'root'@'%';
+            SET GLOBAL validate_password.policy=LOW;
+            exit;
             sudo systemctl restart mysqld
             sudo yum install -y install python3-devel gcc augeas-libs openssl-devel libffi-devel \ redhat-rpm-config ca-certificates openssl
             sudo cd /home/$USER
