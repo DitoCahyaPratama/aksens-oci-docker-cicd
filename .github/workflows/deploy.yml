@@ -113,26 +113,44 @@ jobs:
           username: opc
           key: ${{secrets.OCI_KEY_FILE}}
           script: |
-            sudo yum install epel-release
-            sudo yum install dnf
-            sudo dnf install nginx php php-fpm php-common php-xml php-mbstring php-json php-zip mariadb-server php-mysqlnd
-            sudo systemctl start php-fpm nginx mariadb
-            sudo systemctl enable php-fpm nginx mariadb
-            sudo systemctl status php-fpm nginx mariadb
+            sudo yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+            sudo yum -y install https://rpms.remirepo.net/enterprise/remi-release-7.rpm
+            sudo yum -y install yum-utils
+            sudo yum-config-manager --enable remi-php74
+            sudo yum update -y
+            sudo yum install -y php php-cli
+            sudo yum install -y php-cli php-fpm php-mysqlnd php-zip php-devel php-gd php-mcrypt php-mbstring php-curl php-xml php-pear php-bcmath php-json php-fpm
+            sudo php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+            sudo php -r "if (hash_file('sha384', 'composer-setup.php') === '756890a4488ce9024fc62c56153228907f1545c228516cbf63f885e036d37e9a59d27d63f46af1d4d07ee0f76181c7d3') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+            sudo php composer-setup.php
+            sudo php -r "unlink('composer-setup.php');"
+            sudo sudo mv composer.phar /usr/local/bin/composer
+            sudo php -v
+            sudo composer -V
+            sudo curl -sL https://rpm.nodesource.com/setup_10.x | sudo bash -
+            sudo sudo yum install -y nodejs
+            sudo yum remove -y git*
+            sudo yum install -y https://packages.endpoint.com/rhel/7/os/x86_64/endpoint-repo-1.7-1.x86_64.rpm
+            sudo yum install -y git
+            sudo rpm -Uvh https://repo.mysql.com/mysql80-community-release-el7-3.noarch.rpm
+            sudo sed -i 's/enabled=1/enabled=0/' /etc/yum.repos.d/mysql-community.repo
+            sudo yum --enablerepo=mysql80-community install -y mysql-community-server
+            sudo systemctl start mysqld
+            sudo grep "A temporary password" /var/log/mysqld.log
             sudo mysql_secure_installation
-            y
-            root
-            y
-            y
-            y
-            sudo firewall-cmd --zone=public --permanent --add-service=http
-            sudo firewall-cmd --zone=public --permanent --add-service=https
-            sudo firewall-cmd --reload
-            yum --enablerepo=remi,epel install php php-zip php-mysql php-mcrypt php-xml php-mbstring
-            service httpd restart
-            curl -sS https://getcomposer.org/installer | php
-            mv composer.phar /usr/bin/composer
-            chmod +x /usr/bin/composer
+            sudo mysql -u root -p
+            sudo CREATE DATABASE aksens;
+            sudo create user 'root'@'%' identified by 'root';
+            sudo GRANT ALL PRIVILEGES ON *.* TO 'root'@'%';
+            sudo SET GLOBAL validate_password.policy=LOW;
+            sudo exit;
+            sudo systemctl restart mysqld
+            sudo yum install -y install python3-devel gcc augeas-libs openssl-devel libffi-devel \ redhat-rpm-config ca-certificates openssl
+            sudo cd /home/$USER
+            sudo git clone https://github.com/certbot/certbot
+            sudo cd certbot
+            sudo python tools/venv3.py
+            sudo source venv3/bin/activate
 
       - name: 'Running Docker Compose'
         uses: appleboy/ssh-action@master

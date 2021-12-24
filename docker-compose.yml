@@ -7,7 +7,7 @@ services:
         entrypoint: dockerize -wait tcp://laravel-db:3306 -timeout 40s ./.docker/entrypoint.sh
         environment:
             - DB_HOST=laravel-db
-            - DB_DATABASE=laravel
+            - DB_DATABASE=aksens
             - DB_USERNAME=root
             - DB_PASSWORD=root
         volumes:
@@ -47,7 +47,7 @@ services:
         volumes:
             - ./.docker/dbdata:/var/lib/mysql
         environment:
-            - MYSQL_DATABASE=laravel
+            - MYSQL_DATABASE=aksens
             - MYSQL_ROOT_PASSWORD=root
             - MYSQL_USER=root
         networks:
